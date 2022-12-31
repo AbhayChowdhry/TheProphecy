@@ -4,25 +4,30 @@ import requests
 import os
 from dotenv import load_dotenv
 import pandas as pd
+import time
+
+# class Node:
+#     def __init__(self, address, value):
+#         self.address = address
+#         self.value = value
 
 load_dotenv()
-
 api_key = os.getenv("covalent_key")
-
 host = "https://api.covalenthq.com"
-# endpoint = "/v1/1/address/{address}/transfers_v2/?contract-address={contract_address}&key={API_KEY}"
 
 G = nx.MultiDiGraph()
-G.add_node("0x712d0f306956a6a4b4f9319ad9b9de48c5345996")
 
-FTX_ADDRESS = '0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2'
+FTX_ADDRESS = '0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2'
 
 df = pd.DataFrame(columns=['tx_hash', 'from_address', 'to_address','transfer_type', 'delta'])  
 
-def get_parent(myaddress, count):
+node_list = []
 
-    # if(myaddress == FTX_ADDRESS or count >= 5):
-    #     return
+def get_parent(myaddress):
+
+    if(myaddress == FTX_ADDRESS):
+        print("REACHED LESSSGOO")
+        return
 
     endpoint = "/v1/1/address/{address}/transfers_v2/?contract-address=0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9&key={API_KEY}"
 
@@ -35,18 +40,29 @@ def get_parent(myaddress, count):
     
         print("json stuff done")
 
-        mylist = []
-        print(count)
-
         for stuff in new_json_data['data']['items']:
             if(stuff['transfers'][0]['tx_hash'] not in df['tx_hash']):
                 
-                mylist.append(stuff['transfers'][0]['from_address'])
+                # mylist.append(stuff['transfers'][0]['from_address'])
 
                 df.loc[len(df.index)] = [stuff['transfers'][0]['tx_hash'],stuff['transfers'][0]['from_address'], stuff['transfers'][0]['to_address'], stuff['transfers'][0]['transfer_type'],stuff['transfers'][0]['delta']]
 
-        for ad in mylist:
-            get_parent(ad, count+1)
+                # if(stuff['transfers'][0]['from_address'] not in node_list):
+                #     node_list.append(stuff['transfers'][0]['from_address'])
+                #     G.add_node(stuff['transfers'][0]['from_address'])
+                
+                # if(stuff['transfers'][0]['to_address'] not in node_list):
+                #     node_list.append(stuff['transfers'][0]['to_address'])
+                #     G.add_node(stuff['transfers'][0]['to_address'])
+                    
+                # G.add_edge(stuff['transfers'][0]['from_address'], stuff['transfers'][0]['to_address'])
+
+
+        # nx.draw(G)
+
+        if(stuff['transfers'][0]['from_address'] != myaddress):
+            print("Going to parent of " + stuff['transfers'][0]['from_address'])
+            get_parent(stuff['transfers'][0]['from_address'])
 
     except:
         print(f"Json stuff failed as address was {myaddress}")
@@ -55,24 +71,47 @@ def get_parent(myaddress, count):
 
 # json_data_str = json.dumps(json_data, indent = 2)
 
-get_parent("0x712d0f306956a6a4b4f9319ad9b9de48c5345996", 0)
-df.to_csv('file1.csv')
+get_parent("0xc7a238f2c89371f43c99f835741459c2219bbea5")
+# df.to_csv('file1.csv')
+
+
+
+
 
 # endpoint = "/v1/1/address/{address}/transfers_v2/?contract-address=0x50D1c9771902476076eCFc8B2A83Ad6b9355a4c9&key={API_KEY}"
 
-# endpoint = endpoint.format(address = "0x79ebd6ca9f685e10ec9f9e205c4f7e685dae8c73", API_KEY = api_key)
+# endpoint = endpoint.format(address = "0x712d0f306956a6a4b4f9319ad9b9de48c5345996", API_KEY = api_key)
 # newrequest = requests.get(host+endpoint)
 # new_json_data = json.loads(newrequest.text)
 
-# print("json stuff done")
+# mylist = []
 
 # for stuff in new_json_data['data']['items']:
 #     if(stuff['transfers'][0]['tx_hash'] not in df['tx_hash']):
+        
+#         mylist.append(stuff['transfers'][0]['from_address'])
+
 #         df.loc[len(df.index)] = [stuff['transfers'][0]['tx_hash'],stuff['transfers'][0]['from_address'], stuff['transfers'][0]['to_address'], stuff['transfers'][0]['transfer_type'],stuff['transfers'][0]['delta']]
-#         print(stuff['transfers'][0]['tx_hash'])
+
+#         if(stuff['transfers'][0]['from_address'] not in node_list):
+#             node_list.append(stuff['transfers'][0]['from_address'])
+#             G.add_node(stuff['transfers'][0]['from_address'])
+        
+#         if(stuff['transfers'][0]['to_address'] not in node_list):
+#             node_list.append(stuff['transfers'][0]['to_address'])
+#             G.add_node(stuff['transfers'][0]['to_address'])
+            
+#         G.add_edge(stuff['transfers'][0]['from_address'], stuff['transfers'][0]['to_address'])
 
 
-print(df)
+# g = nx.MultiDiGraph()
+# g.add_node("a")
+# g.add_node("b")
+# g.add_node("c")
+# g.add_edge("a", "b")
+# g.add_edge("c", "b")
+# nx.draw(g)
+# print(df)
 
 
 
